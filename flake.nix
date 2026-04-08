@@ -88,7 +88,6 @@
               cfg.package
               pkgs.libftdi1
               pkgs.libusb1
-              pkgs.node-red
             ];
 
             # Launchd service
