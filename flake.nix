@@ -73,7 +73,6 @@
                     exec ${cfg.package}/bin/olad --daemon  
                 '';
                 serviceConfig = {
-                ProgramArguments = oladArgs;
                 KeepAlive = true;
                 RunAtLoad = true;
 
