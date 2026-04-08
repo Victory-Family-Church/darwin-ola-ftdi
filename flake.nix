@@ -35,7 +35,7 @@
           oladArgs =
             [
               "${cfg.package}/bin/olad --daemon"
-            ]
+            ];
         in
         {
           options.services.ola-ftdi = {
