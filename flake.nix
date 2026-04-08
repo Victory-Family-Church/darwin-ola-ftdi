@@ -34,7 +34,8 @@
 
           oladArgs =
             [
-              "${cfg.package}/bin/olad --daemon"
+              "${cfg.package}/bin/olad"
+              "--daemon"
             ];
         in
         {
