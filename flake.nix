@@ -46,10 +46,6 @@
         {
           options.services.ola-ftdi = {
             enable = lib.mkEnableOption "OLA with FTDI DMX support";
-            user = lib.mkOption {    
-              type = lib.types.str;    
-              description = "User account to run OLA as.";  
-            };
             
             package = lib.mkOption {
               type = lib.types.package;
@@ -75,6 +71,10 @@
                 default = "127.0.0.1";
                 description = "Interface to bind OLA web UI";
               };
+                user = lib.mkOption {    
+                type = lib.types.str;    
+                description = "User account to run OLA as.";  
+                };
             };
 
             usb = {
@@ -106,7 +106,7 @@
                 StandardErrorPath = "/tmp/olad.err";
 
                 # Needed for USB access
-                UserName = cfg.user;
+                UserName = cfg.web.user;
               };
             };
 
