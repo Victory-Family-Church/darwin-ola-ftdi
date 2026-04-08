@@ -80,6 +80,12 @@
                 description = "Enable FTDI USB access helpers";
               };
             };
+            user = {
+              enableFtdi = lib.mkOption {
+                type = lib.types.str;
+                description = "User to run as";
+              };
+            };
           };
 
           config = lib.mkIf cfg.enable {
@@ -102,7 +108,7 @@
                 StandardErrorPath = "/tmp/olad.err";
 
                 # Needed for USB access
-                UserName = "root";
+                UserName = user;
               };
             };
 
