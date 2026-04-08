@@ -34,14 +34,8 @@
 
           oladArgs =
             [
-              "${cfg.package}/bin/olad"
-              "--daemon"
+              "${cfg.package}/bin/olad --daemon"
             ]
-            ++ lib.optionals (!cfg.web.enable) [ "--no-httpd" ]
-            ++ lib.optionals cfg.web.enable [
-              "--http-port" (toString cfg.web.port)
-              "--http-interface" cfg.web.host
-            ];
         in
         {
           options.services.ola-ftdi = {
@@ -54,23 +48,6 @@
             };
 
             web = {
-              enable = lib.mkOption {
-                type = lib.types.bool;
-                default = true;
-                description = "Enable OLA web UI";
-              };
-
-              port = lib.mkOption {
-                type = lib.types.port;
-                default = 9090;
-                description = "Port for OLA web UI";
-              };
-
-              host = lib.mkOption {
-                type = lib.types.str;
-                default = "127.0.0.1";
-                description = "Interface to bind OLA web UI";
-              };
                 user = lib.mkOption {    
                 type = lib.types.str;    
                 description = "User account to run OLA as.";  
