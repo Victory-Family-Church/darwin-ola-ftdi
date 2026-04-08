@@ -72,7 +72,6 @@
                 script = ''    
                     exec ${cfg.package}/bin/olad
                 '';
-                program
                 serviceConfig = {
                 KeepAlive = true;
                 RunAtLoad = true;
