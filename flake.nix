@@ -70,8 +70,9 @@
             # Launchd service
             launchd.daemons.ola = {
                 script = ''    
-                    exec ${cfg.package}/bin/olad --daemon  
+                    exec ${cfg.package}/bin/olad
                 '';
+                program
                 serviceConfig = {
                 KeepAlive = true;
                 RunAtLoad = true;
