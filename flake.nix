@@ -35,6 +35,7 @@
           oladArgs =
             [
               "${cfg.package}/bin/olad"
+              "--daemon"
             ]
             ++ lib.optionals (!cfg.web.enable) [ "--no-httpd" ]
             ++ lib.optionals cfg.web.enable [
