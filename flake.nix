@@ -31,12 +31,6 @@
       darwinModules.ola-ftdi = { config, pkgs, lib, ... }:
         let
           cfg = config.services.ola-ftdi;
-
-          oladArgs =
-            [
-              "${cfg.package}/bin/olad"
-              "--daemon"
-            ];
         in
         {
           options.services.ola-ftdi = {
@@ -75,7 +69,10 @@
 
             # Launchd service
             launchd.daemons.ola = {
-              serviceConfig = {
+                script = ''    
+                    exec ${cfg.package}/bin/olad --daemon  
+                '';
+                serviceConfig = {
                 ProgramArguments = oladArgs;
                 KeepAlive = true;
                 RunAtLoad = true;
