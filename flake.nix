@@ -1,119 +1,53 @@
 {
-  description = "OLA with FTDI DMX support (nix-darwin module)";
+  description = "OLA with FTDI DMX support (Nixpkgs overlay)";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    nix-darwin.url = "github:LnL7/nix-darwin";
   };
 
-  outputs = { self, nixpkgs, flake-utils, ... }:
+  outputs = { self, nixpkgs, flake-utils }:
     let
       overlay = final: prev: {
         olaftdi = prev.ola.overrideAttrs (old: {
-          buildInputs = (old.buildInputs or []) ++ [ final.libftdi1 ];
+          buildInputs = (old.buildInputs or []) ++ [
+            final.libftdi1
+          ];
 
           configureFlags = (old.configureFlags or []) ++ [
             "--enable-ftdidmx"
           ];
 
           env = (old.env or {}) // {
+            # OLA treats warnings as errors on Darwin
             NIX_CFLAGS_COMPILE = "-Wno-error";
           };
         });
       };
     in
     {
-      # Expose overlay
+      # Expose the overlay
       overlays.default = overlay;
-
-      # nix-darwin module
-      darwinModules.ola-ftdi = { config, pkgs, lib, ... }:
-        let
-          cfg = config.services.ola-ftdi;
-        in
-        {
-          options.services.ola-ftdi = {
-            enable = lib.mkEnableOption "OLA with FTDI DMX support";
-            
-            package = lib.mkOption {
-              type = lib.types.package;
-              default = pkgs.olaftdi;
-              description = "OLA package with FTDI";
-            };
-
-            web = {
-                user = lib.mkOption {    
-                type = lib.types.str;    
-                description = "User account to run OLA as.";  
-                };
-            };
-
-            usb = {
-              enableFtdi = lib.mkOption {
-                type = lib.types.bool;
-                default = true;
-                description = "Enable FTDI USB access helpers";
-              };
-            };
-          };
-
-          config = lib.mkIf cfg.enable {
-            nixpkgs.overlays = [ overlay ];
-
-            environment.systemPackages = [
-              cfg.package
-              pkgs.libftdi1
-              pkgs.libusb1
-            ];
-
-            # Launchd service
-            launchd.daemons.ola = {
-                script = ''    
-                    exec ${cfg.package}/bin/olad
-                '';
-                serviceConfig = {
-                KeepAlive = true;
-                RunAtLoad = true;
-
-                StandardOutPath = "/tmp/olad.log";
-                StandardErrorPath = "/tmp/olad.err";
-
-                # Needed for USB access
-                UserName = cfg.web.user;
-              };
-            };
-
-            # macOS USB / FTDI handling
-            system.activationScripts.ola-ftdi-usb.text =
-              lib.mkIf cfg.usb.enableFtdi ''
-                echo "Configuring FTDI access for OLA..."
-
-                /usr/sbin/system_profiler SPUSBDataType | grep -i ftdi || true
-
-                echo "NOTE:"
-                echo "- If OLA cannot access the device,"
-                echo "  try unloading Apple's FTDI driver:"
-                echo "  sudo kextunload -b com.apple.driver.AppleUSBFTDI"
-              '';
-          };
-        };
     }
     //
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
           inherit system;
-          config = {
-           problems.handlers = {
-             ola.broken = "warn"; # or "ignore"
-           };
-         };
           overlays = [ overlay ];
+          config = {
+            problems.handlers = {
+              ola.broken = "warn"; # or "ignore"
+            };
+          };
         };
       in
       {
-        packages.default = pkgs.olaftdi;
+        # Make `nix build .#olaftdi` work
+        packages = {
+          olaftdi = pkgs.olaftdi;
+          default = pkgs.olaftdi;
+        };
 
         devShells.default = pkgs.mkShell {
           buildInputs = [
@@ -125,7 +59,7 @@
           shellHook = ''
             echo "🔧 OLA FTDI Dev Shell"
             echo ""
-            echo "Run:"
+            echo "Try:"
             echo "  olad --http-port 9090 --http-interface 127.0.0.1"
             echo "  ola_dev_info"
             echo ""
